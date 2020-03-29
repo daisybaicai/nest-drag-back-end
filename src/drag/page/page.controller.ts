@@ -16,7 +16,7 @@ export class PageController {
 
 
     @UseGuards(AuthGuard('jwt'))
-    @Post()
+    @Put()
     async updatePageCode(@User('userId') userId: number, @Body("code") code: string) {
       return this.pageService.updateCodeByUserId(userId, code);
     }

@@ -46,7 +46,6 @@ export class PageService {
   }
 
   async updateCodeByUserId(userId: number, code: string): Promise<any> {
-    console.log('code', JSON.stringify(code));
     const sql = `
     Update
       page
@@ -56,9 +55,6 @@ export class PageService {
       user_id = ${userId}
   `; // 一段平淡无奇的 SQL 查询语句
     try {
-      // sequelize.query("UPDATE users SET y = 42 WHERE x = 12").then(([results, metadata]) => {
-      //   // Results will be an empty array and metadata will contain the number of affected rows.
-      // })
       const result = (
         await sequelize.query(sql, {
           type: Sequelize.QueryTypes.UPDATE, // 查询方式
