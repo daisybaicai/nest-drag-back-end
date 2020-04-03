@@ -98,7 +98,89 @@ export class ComponentService {
       return {
         code: 200,
         msg: '查询成功',
-        data: res
+        data: res,
+      };
+    } catch (error) {
+      return {
+        code: 503,
+        msg: `Service error: ${error}`,
+      };
+    }
+  }
+
+  async getPublicComponents(): Promise<any> {
+    const sql = `
+      SELECT id, com_name, com_status FROM component 
+      WHERE com_status = 'PUBLIC'
+    `;
+    try {
+      const res = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
+      return {
+        code: 200,
+        msg: '查询成功',
+        data: res,
+      };
+    } catch (error) {
+      return {
+        code: 503,
+        msg: `Service error: ${error}`,
+      };
+    }
+  }
+
+  async getPersonalComponents(userId: number): Promise<any> {
+    const sql = `
+      SELECT id, com_name, com_status FROM component 
+      WHERE com_status = 'PERSONAL' and user_id = ${userId}
+    `;
+    try {
+      const res = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
+      return {
+        code: 200,
+        msg: '查询成功',
+        data: res,
+      };
+    } catch (error) {
+      return {
+        code: 503,
+        msg: `Service error: ${error}`,
+      };
+    }
+  }
+
+  async getOrginzationComponents(userId: number): Promise<any> {
+    const sql = `
+    SELECT
+      c.id, c.com_name, c.com_status
+    FROM
+      component c
+          INNER JOIN
+      component_orginzation co ON c.id = co.com_id
+          INNER JOIN
+      orginzation o ON o.id = co.org_id
+          INNER JOIN
+      user_orginzation uo ON uo.org_id = o.id
+          INNER JOIN
+      user u ON u.user_id = uo.user_id where u.user_id = ${userId}
+    `;
+    try {
+      const res = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
+      return {
+        code: 200,
+        msg: '查询成功',
+        data: res,
       };
     } catch (error) {
       return {

@@ -21,4 +21,22 @@ export class ComponentController {
     async getUserComponents(@User('userId') userId: number) {
         return this.componentService.getUserComponents(userId);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/personal')
+    async getPersonalComponents(@User('userId') userId: number) {
+        return this.componentService.getPersonalComponents(userId);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/public')
+    async getPublicComponents() {
+        return this.componentService.getPublicComponents();
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/orginzation')
+    async getOrginzationComponents(@User('userId') userId: number) {
+        return this.componentService.getOrginzationComponents(userId);
+    }
 }
