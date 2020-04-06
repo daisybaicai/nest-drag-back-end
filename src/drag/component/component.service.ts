@@ -1,15 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import * as Sequelize from 'sequelize'; // 引入 Sequelize 库
 import sequelize from '../../database/sequelize'; // 引入 Sequelize 实例
+// 引入七牛模块
+// import * as qiniu from 'qiniu';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const qiniu = require('qiniu');
+
+//要上传的空间名
+const bucket = 'reactdrag0514';
+const accessKey = 'd3U4GRz5_8eQL-lXBvUoZ3vNdL0q8VRKRw8wFCLe';
+const secretKey = 'VgJZdylTiE2cGamGvRPFlVwfxk8CahNLBc0Xfv0f';
+const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+
+const options = {
+  scope: bucket,
+};
+const putPolicy = new qiniu.rs.PutPolicy(options);
+const uploadToken = putPolicy.uploadToken(mac);
+
+const config = new qiniu.conf.Config();
+// 空间对应的机房
+config.zone = qiniu.zone.Zone_z0;
 
 @Injectable()
 export class ComponentService {
   async createComponent(userId: number, requestBody: any): Promise<any> {
     // 创建组织
-    const { comName, comCode, comStatus, comOrgArr } = requestBody;
-    const createOrgSQL = `INSERT INTO component(com_name, com_code, com_status, user_id) VALUES('${comName}', '${JSON.stringify(
+    const { comName, comCode, comStatus, comOrgArr, filePath, comDescription } = requestBody;
+    const createOrgSQL = `INSERT INTO component(com_name, com_code, com_status, user_id, com_description, file_path) VALUES('${comName}', '${JSON.stringify(
       comCode,
-    )}', '${comStatus}', ${userId})`;
+    )}', '${comStatus}', ${userId}, '${comDescription}', '${filePath}')`;
     try {
       const result = (
         await sequelize.query(createOrgSQL, {
@@ -73,12 +93,12 @@ export class ComponentService {
   async getUserComponents(userId: number): Promise<any> {
     // 分割orgId， 拼接sql
     const basicSql = `
-    SELECT id, com_name, com_code, com_status FROM component WHERE com_status = 'PUBLIC'
+    SELECT id, com_name, com_code, com_status, file_path FROM component WHERE com_status = 'PUBLIC'
     UNION
-    SELECT id, com_name, com_code, com_status FROM component WHERE com_status = 'PERSONAL' and user_id = ${userId}
+    SELECT id, com_name, com_code, com_status, file_path FROM component WHERE com_status = 'PERSONAL' and user_id = ${userId}
     UNION
     SELECT
-      c.id, c.com_name, c.com_code, c.com_status
+      c.id, c.com_name, c.com_code, c.com_status, c.file_path
     FROM
       component c
           INNER JOIN
@@ -110,7 +130,7 @@ export class ComponentService {
 
   async getPublicComponents(): Promise<any> {
     const sql = `
-      SELECT id, com_name, com_status FROM component 
+      SELECT id, com_name, com_status, com_description, file_path FROM component 
       WHERE com_status = 'PUBLIC'
     `;
     try {
@@ -134,7 +154,7 @@ export class ComponentService {
 
   async getPersonalComponents(userId: number): Promise<any> {
     const sql = `
-      SELECT id, com_name, com_status FROM component 
+      SELECT id, com_name, com_status, com_description, file_path FROM component 
       WHERE com_status = 'PERSONAL' and user_id = ${userId}
     `;
     try {
@@ -159,7 +179,7 @@ export class ComponentService {
   async getOrginzationComponents(userId: number): Promise<any> {
     const sql = `
     SELECT
-      c.id, c.com_name, c.com_status
+      c.id, c.com_name, c.com_status, c.com_description, c.file_path
     FROM
       component c
           INNER JOIN
@@ -182,6 +202,41 @@ export class ComponentService {
         msg: '查询成功',
         data: res,
       };
+    } catch (error) {
+      return {
+        code: 503,
+        msg: `Service error: ${error}`,
+      };
+    }
+  }
+
+  UploadmyFile(filename: string): any {
+    try {
+      const localFile = `/Users/daisiyao/Desktop/boi/nest-drag-back-end/uploads/${filename}`;
+      const formUploader = new qiniu.form_up.FormUploader(config);
+      const putExtra = new qiniu.form_up.PutExtra();
+      const key = filename;
+      // 文件上传
+      formUploader.putFile(uploadToken, key, localFile, putExtra, function(
+        respErr,
+        respBody,
+        respInfo,
+      ) {
+        if (respErr) {
+          throw respErr;
+        }
+        if (respInfo.statusCode == 200) {
+          console.log(respBody);
+          return {
+            code: 200,
+            data: 'jhaa'
+          };
+        } else {
+          console.log(respInfo.statusCode);
+          console.log(respBody);
+          return respBody;
+        }
+      })
     } catch (error) {
       return {
         code: 503,

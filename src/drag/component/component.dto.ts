@@ -11,4 +11,12 @@ export class ComponentInfoDto {
     
     @IsOptional()
     readonly comOrgArr: Array<number>;
+
+    @IsString({ message: '必须是字符类型'})
+    @IsNotEmpty({message: '组件保存路径不能为空'})
+    readonly filePath: string;
+
+    @IsString({ message: '必须是字符类型'})
+    @IsNotEmpty({message: '组件描述不能为空'})
+    readonly comDescription: string;
 }
