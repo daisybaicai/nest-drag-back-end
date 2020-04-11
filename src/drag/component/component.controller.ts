@@ -10,6 +10,8 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
+  Param,
+  Put
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/decorator/user.decorator';
@@ -118,5 +120,18 @@ export class ComponentController {
             filename: `http://q8bn25vr4.bkt.clouddn.com/${filename}`
         }
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/:id')
+  // 获取指定component 用于编辑
+  async getComponentCode(@User('userId') userId: number, @Param('id') id) {
+    return this.componentService.findComponentCodeByUserId(userId, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/:id')
+  async updatePageCode(@Body("code") code: string, @Param('id') id) {
+    return this.componentService.updateComponentCodeByUserId(code, id);
   }
 }

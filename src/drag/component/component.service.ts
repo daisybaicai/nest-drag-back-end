@@ -26,7 +26,14 @@ config.zone = qiniu.zone.Zone_z0;
 export class ComponentService {
   async createComponent(userId: number, requestBody: any): Promise<any> {
     // 创建组织
-    const { comName, comCode, comStatus, comOrgArr, filePath, comDescription } = requestBody;
+    const {
+      comName,
+      comCode,
+      comStatus,
+      comOrgArr,
+      filePath,
+      comDescription,
+    } = requestBody;
     const createOrgSQL = `INSERT INTO component(com_name, com_code, com_status, user_id, com_description, file_path) VALUES('${comName}', '${JSON.stringify(
       comCode,
     )}', '${comStatus}', ${userId}, '${comDescription}', '${filePath}')`;
@@ -210,38 +217,87 @@ export class ComponentService {
     }
   }
 
-  UploadmyFile(filename: string): any {
-    try {
-      const localFile = `/Users/daisiyao/Desktop/boi/nest-drag-back-end/uploads/${filename}`;
-      const formUploader = new qiniu.form_up.FormUploader(config);
-      const putExtra = new qiniu.form_up.PutExtra();
-      const key = filename;
-      // 文件上传
-      formUploader.putFile(uploadToken, key, localFile, putExtra, function(
-        respErr,
-        respBody,
-        respInfo,
-      ) {
-        if (respErr) {
-          throw respErr;
-        }
-        if (respInfo.statusCode == 200) {
-          console.log(respBody);
+  async findComponentCodeByUserId(
+    userId: number,
+    componentId: number,
+  ): Promise<any> {
+    // 先检验是否是组件id该用户是否可读
+    const basicSql = `
+    SELECT com_code FROM component WHERE com_status = 'PUBLIC' and id = ${componentId}
+    UNION
+    SELECT com_code FROM component WHERE com_status = 'PERSONAL' and user_id = ${userId} and id = ${componentId}
+    UNION
+    SELECT
+      c.com_code
+    FROM
+      component c
+          INNER JOIN
+      component_orginzation co ON c.id = co.com_id
+          INNER JOIN
+      orginzation o ON o.id = co.org_id
+          INNER JOIN
+      user_orginzation uo ON uo.org_id = o.id
+          INNER JOIN
+      user u ON u.user_id = uo.user_id where u.user_id = ${userId} and c.id = ${componentId};`;
+      try {
+        const res = await sequelize.query(basicSql, {
+          type: Sequelize.QueryTypes.SELECT, // 查询方式
+          raw: true, // 是否使用数组组装的方式展示结果
+          logging: true, // 是否将 SQL 语句打印到控制台
+        });
+        if(res.length > 0) {
           return {
             code: 200,
-            data: 'jhaa'
+            msg: '查询成功',
+          data: {
+            code: res[0].com_code,
+          },
           };
         } else {
-          console.log(respInfo.statusCode);
-          console.log(respBody);
-          return respBody;
+          return {
+            code: 999,
+            msg: '暂时无法访问该组件',
+          };
         }
-      })
-    } catch (error) {
+      } catch (error) {
+        return {
+          code: 503,
+          msg: `Service error: ${error}`,
+        };
+      }
+  }
+
+  async updateComponentCodeByUserId(code: string, componentId: number): Promise<any> {
+    const sql = `
+    Update
+      component
+    Set
+      com_code = '${JSON.stringify(code)}'
+    WHERE
+    id = ${componentId}
+  `; // 一段平淡无奇的 SQL 查询语句
+    try {
+      const result = (
+        await sequelize.query(sql, {
+          type: Sequelize.QueryTypes.UPDATE, // 查询方式
+          raw: true, // 是否使用数组组装的方式展示结果
+          logging: true, // 是否将 SQL 语句打印到控制台
+        })
+      )[1];
+      // 若查不到用户，则 user === undefined
+      if (result) {
+        return {
+          code: 200,
+          msg: 'Success update',
+        };
+      }
       return {
-        code: 503,
-        msg: `Service error: ${error}`,
+        code: 500,
+        msg: '更新失败/或者可能是之前就是相同的不用无影响',
       };
+    } catch (error) {
+      console.error(error);
+      return void 0;
     }
   }
 }
