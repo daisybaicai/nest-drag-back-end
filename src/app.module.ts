@@ -13,11 +13,15 @@ import { OrginzationModule } from './drag/orginzation/orginzation.module';
 import { ComponentModule } from './drag/component/component.module';
 import { MulterModule } from '@nestjs/platform-express';
 
+import { ApplicationService } from './drag/application/application.service';
+import { ApplicationController } from './drag/application/application.controller';
+import { ApplicationModule } from './drag/application/application.module';
+
 @Module({
   imports: [UserModule, AuthModule, PageModule, OrginzationModule, ComponentModule,MulterModule.register({
     dest: './uploads',
-  })],
-  controllers: [AppController, UserController, OrginzationController],
-  providers: [AppService, PageService],
+  }), ApplicationModule],
+  controllers: [AppController, UserController, OrginzationController, ApplicationController],
+  providers: [AppService, PageService, ApplicationService],
 })
 export class AppModule {}
