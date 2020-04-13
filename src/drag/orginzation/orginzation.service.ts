@@ -69,4 +69,26 @@ export class OrginzationService {
       return void 0;
     }
   }
+
+  async getOrganizationList(userId: number): Promise<any> {
+    const sql = `select *,(select case  when count(1)>0  then 'true' else 'false' end  from user_orginzation uo where uo.org_id = o.id and uo.user_id = ${userId} ) as user_status from orginzation o;`;
+    try {
+      const result = (
+        await sequelize.query(sql, {
+          type: Sequelize.QueryTypes.SELECT, // 查询方式
+          raw: true, // 是否使用数组组装的方式展示结果
+          logging: true, // 是否将 SQL 语句打印到控制台
+        })
+      );
+      return {
+          code: 200,
+          data: {
+            list: result,
+          }
+      };
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
 }

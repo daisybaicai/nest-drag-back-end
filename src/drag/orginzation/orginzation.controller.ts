@@ -21,4 +21,10 @@ export class OrginzationController {
     async getOrginzationsByUserId(@User('userId') userId: number) {
         return this.orginzationService.getOrginzationsByUserId(userId);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/list')
+    async getOrganizationList(@User('userId') userId: number) {
+        return this.orginzationService.getOrganizationList(userId);
+    }
 }
