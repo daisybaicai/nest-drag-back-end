@@ -5,12 +5,12 @@ import sequelize from '../../database/sequelize'; // 引入 Sequelize 实例
 
 @Injectable()
 export class ApplicationService {
-  async applyOrganization(body: any): Promise<any> {
-    const { from_id, to_id, org_id, apply_status } = body;
+  async applyOrganization(body: any, userId: number): Promise<any> {
+    const { to_id, org_id, apply_status } = body;
     const createOrgSQL = `
     INSERT INTO
     apply(from_id, to_id, org_id, apply_status)
-    VALUES('${from_id}', '${to_id}', '${org_id}', '${apply_status}')`;
+    VALUES('${userId}', '${to_id}', '${org_id}', '${apply_status}')`;
     try {
       await sequelize.query(createOrgSQL, { logging: false });
       return {
@@ -47,7 +47,7 @@ export class ApplicationService {
       if (result) {
         return {
           code: 200,
-          msg: 'Success update',
+          msg: '申请成功',
         };
       }
       return {
@@ -60,4 +60,38 @@ export class ApplicationService {
     }
   }
 
+
+  async getAllApplicationByUserId(userId: number): Promise<any> {
+    const sql = `
+    SELECT
+      a.*,
+      u.username,
+      o.org_name
+    FROM
+      apply a
+      LEFT JOIN USER u ON a.from_id = u.user_id
+      LEFT JOIN orginzation o ON a.org_id = o.id 
+    WHERE
+      a.to_id = ${userId};
+    `;
+    try {
+      const result = (
+        await sequelize.query(sql, {
+          type: Sequelize.QueryTypes.SELECT, // 查询方式
+          raw: true, // 是否使用数组组装的方式展示结果
+          logging: true, // 是否将 SQL 语句打印到控制台
+        })
+      );
+      return {
+          code: 200,
+          data: {
+            total: result.length || 0,
+            list: result,
+          }
+      };
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
 }

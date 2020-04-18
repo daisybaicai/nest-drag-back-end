@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsEnum } from "class-validator";
 
 export class ApplicationInfoDTO {
-    @IsNotEmpty({ message: '发送者id不能为空'})
-    readonly from_id: number;
+    // @IsNotEmpty({ message: '发送者id不能为空'})
+    // readonly from_id: number;
     @IsNotEmpty({ message: '接收者id不能为空'})
     readonly to_id: number;
     @IsNotEmpty({ message: '申请类型不能为空'})

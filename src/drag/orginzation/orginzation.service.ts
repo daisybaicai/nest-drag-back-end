@@ -59,10 +59,10 @@ export class OrginzationService {
       const splitArr = result['org_arr'].split(',');
       const resultArr = splitArr.map(Number);
       return {
-          code: 200,
-          data: {
-              orgArr: resultArr
-          }
+        code: 200,
+        data: {
+          orgArr: resultArr,
+        },
       };
     } catch (error) {
       console.error(error);
@@ -71,20 +71,47 @@ export class OrginzationService {
   }
 
   async getOrganizationList(userId: number): Promise<any> {
-    const sql = `select *,(select case  when count(1)>0  then 'true' else 'false' end  from user_orginzation uo where uo.org_id = o.id and uo.user_id = ${userId} ) as user_status from orginzation o;`;
+    const sql = `
+    SELECT*,(
+      SELECT CASE WHEN COUNT(1)> 0 THEN 'true' ELSE 'false' END FROM user_orginzation uo WHERE uo.org_id=o.id AND uo.user_id=${userId}) AS user_status FROM orginzation o LEFT JOIN (
+      SELECT a.apply_status,a.org_id,a.from_id FROM apply a) tmp ON o.id=tmp.org_id AND tmp.from_id=${userId}
+    `;
     try {
-      const result = (
-        await sequelize.query(sql, {
-          type: Sequelize.QueryTypes.SELECT, // 查询方式
-          raw: true, // 是否使用数组组装的方式展示结果
-          logging: true, // 是否将 SQL 语句打印到控制台
-        })
-      );
+      const result = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
       return {
-          code: 200,
-          data: {
-            list: result,
-          }
+        code: 200,
+        data: {
+          list: result,
+        },
+      };
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
+
+  async getOrganizationMyList(userId: number): Promise<any> {
+    const sql = `
+    SELECT*,(
+      SELECT CASE WHEN COUNT(1)> 0 THEN 'true' ELSE 'false' END FROM user_orginzation uo WHERE uo.org_id=o.id AND uo.user_id=${userId}) AS user_status FROM orginzation o LEFT JOIN (
+      SELECT a.apply_status,a.org_id,a.from_id FROM apply a) tmp ON o.id=tmp.org_id AND tmp.from_id=${userId}
+    `;
+    try {
+      const result = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
+      const list = result.filter(item => item.user_status === 'true');
+      return {
+        code: 200,
+        data: {
+          list: list,
+        },
       };
     } catch (error) {
       console.error(error);

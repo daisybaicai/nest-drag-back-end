@@ -23,8 +23,15 @@ export class OrginzationController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get('/list')
+    @Get('/list/all')
     async getOrganizationList(@User('userId') userId: number) {
         return this.orginzationService.getOrganizationList(userId);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/list/personal')
+    async getOrganizationMyList(@User('userId') userId: number) {
+        return this.orginzationService.getOrganizationMyList(userId);
+    }
+    
 }
