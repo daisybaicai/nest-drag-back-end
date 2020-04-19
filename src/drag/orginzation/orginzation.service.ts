@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Injectable } from '@nestjs/common';
 import * as Sequelize from 'sequelize'; // 引入 Sequelize 库
 import sequelize from '../../database/sequelize'; // 引入 Sequelize 实例

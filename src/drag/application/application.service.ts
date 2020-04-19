@@ -60,7 +60,6 @@ export class ApplicationService {
     }
   }
 
-
   async getAllApplicationByUserId(userId: number): Promise<any> {
     const sql = `
     SELECT
@@ -75,23 +74,74 @@ export class ApplicationService {
       a.to_id = ${userId};
     `;
     try {
-      const result = (
-        await sequelize.query(sql, {
-          type: Sequelize.QueryTypes.SELECT, // 查询方式
-          raw: true, // 是否使用数组组装的方式展示结果
-          logging: true, // 是否将 SQL 语句打印到控制台
-        })
-      );
+      const result = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
       return {
-          code: 200,
-          data: {
-            total: result.length || 0,
-            list: result,
-          }
+        code: 200,
+        data: {
+          total: result.length || 0,
+          list: result,
+        },
       };
     } catch (error) {
       console.error(error);
       return void 0;
     }
   }
+
+  async getApplicationById(body: any): Promise<any> {
+    const { id } = body;
+    const sql = `
+    SELECT
+      * 
+    FROM
+      apply 
+    WHERE
+      id = ${id};
+    `;
+    try {
+      const result = await sequelize.query(sql, {
+        type: Sequelize.QueryTypes.SELECT, // 查询方式
+        raw: true, // 是否使用数组组装的方式展示结果
+        logging: true, // 是否将 SQL 语句打印到控制台
+      });
+      return {
+        code: 200,
+        data: {
+          list: result,
+        },
+      };
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
+
+  // 用户加入组织user_organzaition表
+  async addUserToOrganization(body: any): Promise<any> {
+    const { from_id, org_id } = body;
+    const createOrgSQL = `INSERT INTO user_orginzation(user_id, org_id) VALUES('${from_id}', '${org_id}')`;
+    try {
+      await sequelize.query(createOrgSQL, { logging: false });
+      return {
+        code: 200,
+        msg: '加入组织成功',
+      };
+    } catch (error) {
+      return {
+        code: 503,
+        msg: `Service error: ${error}`,
+      };
+    }
+  }
+
+  async applyAddUserOrganization(body: any): Promise<any> {
+    const res = await this.getApplicationById(body);
+    const res2 = await this.addUserToOrganization(res.data.list[0]);
+    return res2;
+  }
+
 }

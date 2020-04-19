@@ -1,3 +1,4 @@
+import { OrginzationService } from './../orginzation/orginzation.service';
 import { ValidationPipe } from './../../pipe/validation.pipe';
 import { ApplicationInfoDTO } from './application.dto';
 import { ApplicationService } from './application.service';
@@ -7,7 +8,7 @@ import { User } from 'src/decorator/user.decorator';
 
 @Controller('application')
 export class ApplicationController {
-    constructor(private readonly applicationService: ApplicationService) {}
+    constructor(private readonly applicationService: ApplicationService, private readonly orginzationService: OrginzationService) {}
 
     @UsePipes(new ValidationPipe)
     @UseGuards(AuthGuard('jwt'))
@@ -18,7 +19,12 @@ export class ApplicationController {
 
     @Put()
     async replyApplication(@Body() body) {
-        return this.applicationService.replyApplication(body);
+        const res = this.applicationService.replyApplication(body);
+        if(body.apply_status === 'ACCEPT') {
+            const apply = this.applicationService.applyAddUserOrganization(body);
+            return res && apply;
+        }
+        return res;
     }
 
     @Get('/all')
