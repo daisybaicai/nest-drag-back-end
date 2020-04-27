@@ -1,7 +1,12 @@
 import { PageService } from './page.service';
 import { AuthGuard } from '@nestjs/passport';
-import { Controller, Get, UseGuards, Req, Body, Put, Post } from '@nestjs/common';
+import { Controller, Get, UseGuards, Body, Put, Post, Res } from '@nestjs/common';
 import { User } from 'src/decorator/user.decorator';
+import { Response } from 'express';
+import fs = require('fs');
+const path = require('path');
+const zipper = require('zip-local');
+
 
 @Controller('page')
 export class PageController {
@@ -19,5 +24,25 @@ export class PageController {
     @Put()
     async updatePageCode(@User('userId') userId: number, @Body("code") code: string) {
       return this.pageService.updateCodeByUserId(userId, code);
+    }
+
+    @Post('/zip')
+    async getZip(@Body("code") code: string, @Res() res: Response) {
+      const data = await this.pageService.getZip(code);
+      // console.log('data', data);
+      const fileName = data.path;
+      const filePath = path.join(__dirname, "../../../../zip", fileName);
+      const stats = fs.statSync(filePath); 
+      console.log('fipath', filePath);
+      if(stats.isFile()){
+        res.set({
+          'Content-Type': 'application/zip',
+          'Content-Disposition': 'attachment; filename='+fileName,
+          'Content-Length': stats.size
+        });
+        return fs.createReadStream(filePath).pipe(res);
+      } else {
+        res.end(404);
+      }
     }
 }
