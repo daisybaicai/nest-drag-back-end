@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as Sequelize from 'sequelize'; // 引入 Sequelize 库
 import sequelize from '../../database/sequelize'; // 引入 Sequelize 实例
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const adm_zip = require('adm-zip');
+const fs = require('fs');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
 @Injectable()
 export class PageService {
@@ -73,6 +78,29 @@ export class PageService {
         code: 500,
         msg: '更新失败/或者可能是之前就是相同的不用无影响',
       };
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
+
+  async getZip(code: string): Promise<any> {
+    // 写入代码文件
+    fs.writeFile('./generateFiles/src/pages/index.jsx', code, function(err) {
+      if (err) {
+        return console.error(err);
+      }
+    });
+    try {
+      const { stdout, stderr } = await exec('cd /Users/daisiyao/Desktop/boi/nest-drag-back-end/generateFiles && npm run build');
+      if(stdout) {
+        const zip = new adm_zip();
+        zip.addLocalFolder('./generateFiles/dist');
+        zip.writeZip('zip/myapp.zip');
+        return {
+          path: 'myapp.zip',
+        };
+      }
     } catch (error) {
       console.error(error);
       return void 0;
