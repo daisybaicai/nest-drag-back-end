@@ -60,7 +60,7 @@ export class UserService {
       await sequelize.query(registerSQL, { logging: false });
       return {
         code: 200,
-        msg: 'Success',
+        msg: '注册成功',
       };
     } catch (error) {
       return {
