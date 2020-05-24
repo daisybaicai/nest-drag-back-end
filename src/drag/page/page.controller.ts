@@ -23,7 +23,12 @@ export class PageController {
     @UseGuards(AuthGuard('jwt'))
     @Put()
     async updatePageCode(@User('userId') userId: number, @Body("code") code: string) {
-      return this.pageService.updateCodeByUserId(userId, code);
+      const hasCode = await this.pageService.findCodeByUserId(userId);
+      if(hasCode.code === 200) {
+        return this.pageService.updateCodeByUserId(userId, code);
+      } else {
+        return this.pageService.postCodeByUserId(userId, code);
+      }
     }
 
     @Post('/zip')

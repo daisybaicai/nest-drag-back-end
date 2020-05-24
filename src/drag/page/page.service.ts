@@ -40,16 +40,48 @@ export class PageService {
           msg: 'Success',
         };
       }
+      // throw new Error("Whoops!");
       return {
         code: 500,
         msg: '暂无用户代码',
       };
     } catch (error) {
       console.error(error);
+      return {
+        code: 500,
+        msg: error,
+      }
       return void 0;
     }
   }
 
+  async postCodeByUserId(userId: number, code: string): Promise<any> {
+    const sql = `
+    INSERT INTO page
+      (user_id, code)
+    VALUES
+      ('${userId}', '${JSON.stringify(code)}')
+  `;
+    try {
+      const result = (
+        await sequelize.query(sql, {
+          type: Sequelize.QueryTypes.INSERT, // 查询方式
+          raw: true, // 是否使用数组组装的方式展示结果
+          logging: true, // 是否将 SQL 语句打印到控制台
+        })
+      )[1];
+      // 若查不到用户，则 user === undefined
+      if (result) {
+        return {
+          code: 200,
+          msg: 'Success update',
+        };
+      }
+    } catch (error) {
+      console.error(error);
+      return void 0;
+    }
+  }
   async updateCodeByUserId(userId: number, code: string): Promise<any> {
     const sql = `
     Update
