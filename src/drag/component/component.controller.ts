@@ -22,7 +22,7 @@ import { editFileName, imageFileFilter } from '../../utils/file-upload.utils';
 const qiniu = require('qiniu');
 
 //要上传的空间名
-const bucket = 'reactdrag0514';
+const bucket = 'reactdragtemp';
 const accessKey = 'd3U4GRz5_8eQL-lXBvUoZ3vNdL0q8VRKRw8wFCLe';
 const secretKey = 'VgJZdylTiE2cGamGvRPFlVwfxk8CahNLBc0Xfv0f';
 const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
@@ -117,7 +117,7 @@ export class ComponentController {
     return {
         code: 200,
         data: {
-            filename: `http://q8bn25vr4.bkt.clouddn.com/${filename}`
+            filename: `http://qacp2knlf.bkt.clouddn.com/${filename}`
         }
     }
   }
