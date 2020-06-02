@@ -51,23 +51,4 @@ export class PageController {
       }
     }
 
-    @Post('/zip')
-    async getZip(@Body("code") code: string, @Res() res: Response) {
-      const data = await this.pageService.getZip(code);
-      // console.log('data', data);
-      const fileName = data.path;
-      const filePath = path.join(__dirname, "../../../../zip", fileName);
-      const stats = fs.statSync(filePath); 
-      console.log('fipath', filePath);
-      if(stats.isFile()){
-        res.set({
-          'Content-Type': 'application/zip',
-          'Content-Disposition': 'attachment; filename='+fileName,
-          'Content-Length': stats.size
-        });
-        return fs.createReadStream(filePath).pipe(res);
-      } else {
-        res.end(404);
-      }
-    }
 }
