@@ -43,7 +43,7 @@
     "sequelize": "^5.21.5",
     "sequelize-typescript": "^1.1.0",
     "stacktrace-js": "^2.0.2",
-    "zip-local": "^0.3.4"
+    "zip-local": "^0.3.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.0.0",
